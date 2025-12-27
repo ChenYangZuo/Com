@@ -19,7 +19,7 @@ namespace {
 }
 
 
-Channel::Channel(std::weak_ptr<EventLoop> loop, const int id)
+Channel::Channel(std::shared_ptr<EventLoop> loop, const int id)
     : m_loop(std::move(loop)),
       m_id(id) {
 }

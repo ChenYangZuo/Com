@@ -18,7 +18,7 @@ class EventLoop;
 
 class Channel : public Noncopyable{
 public:
-    Channel(std::weak_ptr<EventLoop> loop, int id);
+    Channel(std::shared_ptr<EventLoop> loop, int id);
     ~Channel();
 
     void handleEvent() const;

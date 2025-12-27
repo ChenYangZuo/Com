@@ -16,6 +16,13 @@ using Timestamp = std::chrono::time_point<std::chrono::steady_clock, std::chrono
  * std::chrono::high_resolution_clock 系统中精度最高的时钟
  */
 
+inline Timestamp addTime(Timestamp timestamp, double seconds) {
+    const auto delta = std::chrono::duration_cast<std::chrono::microseconds>(
+        std::chrono::duration<double>(seconds)
+    );
+    return timestamp + delta;
+}
+
 }
 
 #endif //COM_TIMESTAMP_H
