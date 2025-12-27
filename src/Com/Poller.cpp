@@ -7,7 +7,7 @@
 #include "Channel.h"
 
 namespace Com {
-Poller::Poller(std::shared_ptr<EventLoop> loop)
+Poller::Poller(EventLoop *loop)
     : m_ownerLoop(loop){
 }
 
@@ -21,9 +21,7 @@ bool Poller::hasChannel(std::weak_ptr<Channel> channel) const {
 }
 
 void Poller::assertInLoopThread() const {
-    if (auto sp = m_ownerLoop.lock()) {
-        sp->assertInLoopThread();
-    }
+    m_ownerLoop->assertInLoopThread();
 }
 
 } // Com

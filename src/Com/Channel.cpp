@@ -19,8 +19,8 @@ namespace {
 }
 
 
-Channel::Channel(std::shared_ptr<EventLoop> loop, const int id)
-    : m_loop(std::move(loop)),
+Channel::Channel(EventLoop *loop, const int id)
+    : m_loop(loop),
       m_id(id) {
 }
 
@@ -116,14 +116,12 @@ void Channel::setIndex(const int index) {
     m_index = index;
 }
 
-std::weak_ptr<EventLoop> Channel::ownerLoop() const {
+EventLoop *Channel::ownerLoop() const {
     return m_loop;
 }
 
 void Channel::update() {
-    if (auto sp = m_loop.lock()) {
-        // sp->updateChannel(this);
-    }
+    // m_loop->updateChannel(this);
 }
 
 } // Com

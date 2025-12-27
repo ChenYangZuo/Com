@@ -18,7 +18,7 @@ class Poller {
 public:
     using ChannelList = std::vector<std::weak_ptr<Channel>>;
 
-    static std::unique_ptr<Poller> create(std::shared_ptr<EventLoop> loop);
+    static std::unique_ptr<Poller> create(EventLoop *loop);
     virtual ~Poller() = default;
 
     virtual Timestamp poll(int timeoutMs, ChannelList &activeChannels) = 0;
@@ -30,13 +30,13 @@ public:
     void assertInLoopThread() const;
 
 protected:
-    explicit Poller(std::shared_ptr<EventLoop> loop);
+    explicit Poller(EventLoop *loop);
 
     using ChannelMap = std::map<int, std::weak_ptr<Channel>>;
     ChannelMap m_channels;
 
 private:
-    std::weak_ptr<EventLoop> m_ownerLoop;
+    EventLoop *m_ownerLoop;
 };
 } // Com
 

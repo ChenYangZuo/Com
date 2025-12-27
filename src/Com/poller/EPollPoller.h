@@ -10,7 +10,7 @@
 namespace Com {
 class EPollPoller final : public Poller{
 public:
-    explicit EPollPoller(std::shared_ptr<EventLoop> loop);
+    explicit EPollPoller(EventLoop *loop);
     ~EPollPoller() override;
 
     Timestamp poll(int timeoutMs, ChannelList &activeChannels) override;

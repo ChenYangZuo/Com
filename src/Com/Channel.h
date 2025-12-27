@@ -18,7 +18,7 @@ class EventLoop;
 
 class Channel : public Noncopyable{
 public:
-    Channel(std::shared_ptr<EventLoop> loop, int id);
+    Channel(EventLoop *loop, int id);
     ~Channel();
 
     void handleEvent() const;
@@ -42,12 +42,12 @@ public:
     int index() const;
     void setIndex(int index);
 
-    std::weak_ptr<EventLoop> ownerLoop() const;
+    EventLoop *ownerLoop() const;
 
 private:
     void update();
 
-    std::weak_ptr<EventLoop> m_loop{};
+    EventLoop *m_loop{};
     const int m_id{};
     int m_events{0};  // 关心的IO事件
     int m_revents{0};  // 目前活动的事件

@@ -10,7 +10,7 @@
 
 namespace Com {
 
-std::unique_ptr<Poller> Poller::create(std::shared_ptr<EventLoop> loop) {
+std::unique_ptr<Poller> Poller::create(EventLoop *loop) {
     if (::getenv("MUDUO_USE_POLL"))
     {
         return std::make_unique<PollPoller>(loop);

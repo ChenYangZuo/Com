@@ -15,7 +15,7 @@ namespace Com {
 
 class PollPoller final : public Poller {
 public:
-    explicit PollPoller(std::shared_ptr<EventLoop> loop);
+    explicit PollPoller(EventLoop *loop);
     ~PollPoller() override;
 
     Timestamp poll(int timeoutMs, ChannelList &activeChannels) override;

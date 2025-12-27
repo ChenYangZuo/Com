@@ -19,7 +19,7 @@ thread_local std::weak_ptr<EventLoop> t_eventLoop{};
 
 EventLoop::EventLoop()
     : m_systemApi(std::make_unique<SystemApi>()),
-      m_poller(Poller::create(shared_from_this())) {
+      m_poller(Poller::create(this)) {
     m_threadId = m_systemApi->getThreadId();
     spdlog::info("EventLoop constructed in thread {}", std::hash<std::thread::id>{}(m_threadId));
 }
@@ -64,7 +64,7 @@ void EventLoop::quit() {
 
 void EventLoop::updateChannel(const std::weak_ptr<Channel>& wChannel) const {
     const auto channel = wChannel.lock();
-    assert(channel->ownerLoop().lock().get() == this);
+    assert(channel->ownerLoop() == this);
     assertInLoopThread();
     m_poller->updateChannel(channel);
 }

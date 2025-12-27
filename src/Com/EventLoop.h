@@ -5,6 +5,7 @@
 #ifndef COM_EVENTLOOP_H
 #define COM_EVENTLOOP_H
 
+#include <vector>
 #include <atomic>
 #include <thread>
 #include <memory>
@@ -21,7 +22,7 @@ class EventLoop;
 using EventLoopPtr = std::shared_ptr<EventLoop>;
 using ChannelList = std::vector<std::weak_ptr<Channel>>;
 
-class EventLoop : public Noncopyable, public std::enable_shared_from_this<EventLoop>{
+class EventLoop : public Noncopyable{
 public:
     static EventLoopPtr create();
     ~EventLoop();

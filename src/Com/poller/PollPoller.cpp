@@ -12,7 +12,7 @@
 
 namespace Com {
 
-PollPoller::PollPoller(std::shared_ptr<EventLoop> loop)
+PollPoller::PollPoller(EventLoop *loop)
     : Poller(loop) {
 }
 
