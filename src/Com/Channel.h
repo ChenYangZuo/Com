@@ -6,7 +6,6 @@
 #define COM_CHANNEL_H
 
 #include <functional>
-#include <memory>
 
 #include "base/Noncopyable.h"
 

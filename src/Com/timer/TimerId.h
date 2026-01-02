@@ -5,15 +5,13 @@
 #ifndef COM_TIMERID_H
 #define COM_TIMERID_H
 
-#include <memory>
-
-#include "base/Noncopyable.h"
+#include <cstdint>
 
 namespace Com {
 
 class Timer;
 
-class TimerId : public Noncopyable{
+class TimerId {
 public:
     TimerId()
         : m_timer(nullptr),

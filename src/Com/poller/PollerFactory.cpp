@@ -19,7 +19,7 @@ std::unique_ptr<Poller> Poller::create(EventLoop *loop) {
     // {
     //     return std::make_shared<EPollPoller>(loop);
     // }
-    return nullptr;
+    return std::make_unique<PollPoller>(loop);
 }
 
 }

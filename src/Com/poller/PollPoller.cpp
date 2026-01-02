@@ -24,7 +24,7 @@ PollPoller::~PollPoller() = default;
 /// @return
 Timestamp PollPoller::poll(const int timeoutMs, ChannelList &activeChannels) {
     int numEvents = ::poll(m_pollFds.data(), m_pollFds.size(), timeoutMs);
-    const Timestamp now = std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::steady_clock::now());
+    const Timestamp now = Timestamp::now();
     if (numEvents > 0) {
         spdlog::trace("{} events happened", numEvents);
         fillActiveChannels(numEvents, activeChannels);

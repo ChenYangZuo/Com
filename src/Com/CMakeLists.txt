@@ -7,6 +7,11 @@ target_sources(${TARGET_EXEC_NAME} PRIVATE
     ${PROJECT_SOURCE_DIR}/src/Com/poller/PollPoller.cpp
     ${PROJECT_SOURCE_DIR}/src/Com/poller/EPollPoller.cpp
     ${PROJECT_SOURCE_DIR}/src/Com/poller/PollerFactory.cpp
+
+    ${PROJECT_SOURCE_DIR}/src/Com/base/Timestamp.cpp
+    ${PROJECT_SOURCE_DIR}/src/Com/timer/Timer.cpp
+    ${PROJECT_SOURCE_DIR}/src/Com/timer/TimerQueue.cpp
+
     ${PROJECT_SOURCE_DIR}/src/Com/EventLoop.cpp
     ${PROJECT_SOURCE_DIR}/src/Com/Channel.cpp
     ${PROJECT_SOURCE_DIR}/src/Com/Poller.cpp

@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <atomic>
+#include <utility>
 
 #include "base/Noncopyable.h"
 #include "base/Timestamp.h"
@@ -18,7 +19,7 @@ using TimerCallback = std::function<void()>;
 class Timer : public Noncopyable {
 public:
     Timer(TimerCallback callback, Timestamp when, double interval)
-        : m_callback(callback),
+        : m_callback(std::move(callback)),
           m_expiration(when),
           m_interval(interval),
           m_repeat(interval > 0.0),

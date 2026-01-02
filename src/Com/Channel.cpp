@@ -24,6 +24,8 @@ Channel::Channel(EventLoop *loop, const int id)
       m_id(id) {
 }
 
+Channel::~Channel() = default;
+
 void Channel::handleEvent() const {
     if (m_revents & POLLNVAL) {
         spdlog::warn("Channel::handleEvent POLLNVAL");
