@@ -13,45 +13,47 @@
 #include "Channel.h"
 
 namespace Com {
-
 class EventLoop;
 
 class TimerQueue {
 public:
     explicit TimerQueue(EventLoop *loop);
+
     ~TimerQueue();
+
+    void initialize();
 
     TimerId addTimer(TimerCallback cb, Timestamp when, double interval);
 
     void removeTimer(TimerId id);
 
 private:
-    // std::set由红黑树实现，按pair.first排序，即按时间排序
-    using Entry = std::pair<Timestamp, std::shared_ptr<Timer>>;
-    using TimerList = std::set<Entry>;
-    // ActiveTimerSet按Timer地址排序，用于快速（O(log n)）删除Timer
+    using Entry = std::pair<Timestamp, std::shared_ptr<Timer> >;
+    using TimerList = std::set<Entry>; // std::set由红黑树实现，按pair.first排序，即按时间排序
     using ActiveTimer = std::pair<std::shared_ptr<Timer>, int64_t>;
-    using ActiveTimerSet = std::set<ActiveTimer>;
+    using ActiveTimerSet = std::set<ActiveTimer>; // ActiveTimerSet按Timer地址排序，用于快速（O(log n)）删除Timer
 
     void handleRead();
 
     std::vector<Entry> getExpired(Timestamp now);
-    void reset(const std::vector<Entry>& expired, Timestamp now);
 
-    void addTimerInLoop(const std::shared_ptr<Timer>& timer);
-    bool insert(const std::shared_ptr<Timer>& timer);
+    void reset(const std::vector<Entry> &expired, Timestamp now);
+
+    void addTimerInLoop(const std::shared_ptr<Timer> &timer);
+
+    bool insert(const std::shared_ptr<Timer> &timer);
+
     void removeTimerInLoop(TimerId timerId);
 
+private:
     EventLoop *m_loop{};
     const int m_timerfd{};
-    Channel m_channel;
-
+    std::shared_ptr<Channel> m_channel{};
     TimerList m_timers{};
     ActiveTimerSet m_activeTimers;
     std::atomic<bool> m_callingExpiredTimers{false};
     ActiveTimerSet m_cancelingTimers{};
 };
-
 } // Com
 
 #endif //COM_TIMEQUEUE_H

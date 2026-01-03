@@ -31,7 +31,7 @@ namespace {
 
 namespace Com {
 
-constexpr int kPollTimeMs = 10000;
+constexpr int kPollTimeMs = 3000;
 
 thread_local std::weak_ptr<EventLoop> t_eventLoop{};
 
@@ -40,8 +40,10 @@ EventLoop::EventLoop()
       m_poller(Poller::create(this)),
       m_timerQueue(std::make_unique<TimerQueue>(this)),
       m_wakeupFd(createEventfd()),
-      m_wakeupChannel(std::make_unique<Channel>(this, m_wakeupFd)){
+      m_wakeupChannel(std::make_shared<Channel>(this, m_wakeupFd)){
     m_threadId = m_systemApi->getThreadId();
+    m_timerQueue->initialize();
+    updateChannel(m_wakeupChannel);
     spdlog::info("EventLoop constructed in thread {}", std::hash<std::thread::id>{}(m_threadId));
 }
 
@@ -66,7 +68,6 @@ void EventLoop::loop() {
     assertInLoopThread();
     m_isRunning = true;
     m_quit = false;
-
     while (!m_quit) {
         m_activeChannels.clear();
         m_poller->poll(kPollTimeMs, m_activeChannels);
@@ -84,10 +85,16 @@ void EventLoop::quit() {
     m_quit = true;
 }
 
-void EventLoop::updateChannel(const std::shared_ptr<Channel>& channel) const {
+void EventLoop::updateChannel(const std::shared_ptr<Channel> &channel) const {
     assert(channel->ownerLoop() == this);
     assertInLoopThread();
     m_poller->updateChannel(channel);
+}
+
+void EventLoop::removeChannel(const std::shared_ptr<Channel> &channel) {
+    assert(channel->ownerLoop() == this);
+    assertInLoopThread();
+    m_poller->removeChannel(channel);
 }
 
 void EventLoop::assertInLoopThread() const {
@@ -139,7 +146,6 @@ TimerId EventLoop::runAt(Timestamp time, TimerCallback callback) {
 TimerId EventLoop::runAfter(double delay, TimerCallback callback) {
     Timestamp time(addTime(Timestamp::now(), delay));
     return runAt(time, std::move(callback));
-
 }
 
 TimerId EventLoop::runEvery(double interval, TimerCallback callback) {

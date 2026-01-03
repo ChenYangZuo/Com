@@ -16,7 +16,6 @@
 #include "timer/TimerId.h"
 
 namespace Com {
-
 namespace {
 int createTimerfd() {
     const int fd = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
@@ -46,17 +45,15 @@ void resetTimerfd(const int timerfd, Timestamp expiration) {
 }
 }
 
-TimerQueue::TimerQueue(EventLoop *loop) 
+TimerQueue::TimerQueue(EventLoop *loop)
     : m_loop(loop),
       m_timerfd(createTimerfd()),
-      m_channel(loop, m_timerfd) {
-    m_channel.setReadCallback([this] { handleRead(); });
-    m_channel.enableRead();
+      m_channel(std::make_shared<Channel>(loop, m_timerfd)) {
 }
 
 TimerQueue::~TimerQueue() {
-    m_channel.disableAll();
-    m_channel.remove();
+    m_channel->disableAll();
+    m_channel->remove();
     ::close(m_timerfd);
 }
 
@@ -66,14 +63,14 @@ TimerId TimerQueue::addTimer(TimerCallback cb, Timestamp when, double interval) 
     return {timer.get(), timer->sequence()};
 }
 
-void TimerQueue::addTimerInLoop(const std::shared_ptr<Timer>& timer) {
+void TimerQueue::addTimerInLoop(const std::shared_ptr<Timer> &timer) {
     m_loop->assertInLoopThread();
     if (insert(timer)) {
         resetTimerfd(m_timerfd, timer->expiration());
     }
 }
 
-bool TimerQueue::insert(const std::shared_ptr<Timer>& timer) {
+bool TimerQueue::insert(const std::shared_ptr<Timer> &timer) {
     m_loop->assertInLoopThread();
     bool earliestChanged = false;
     auto when = timer->expiration();
@@ -89,6 +86,11 @@ void TimerQueue::removeTimer(TimerId id) {
     m_loop->runInLoop([this, id] { removeTimerInLoop(id); });
 }
 
+void TimerQueue::initialize() {
+    m_channel->setReadCallback([this] { handleRead(); });
+    m_channel->enableRead();
+}
+
 void TimerQueue::removeTimerInLoop(TimerId timerId) {
     m_loop->assertInLoopThread();
     ActiveTimer timer(timerId.m_timer, timerId.m_sequence);
@@ -96,8 +98,7 @@ void TimerQueue::removeTimerInLoop(TimerId timerId) {
     if (it != m_activeTimers.end()) {
         m_timers.erase(Entry(it->first->expiration(), it->first));
         m_activeTimers.erase(it);
-    }
-    else if (m_callingExpiredTimers) {
+    } else if (m_callingExpiredTimers) {
         // 该定时器正在执行
         m_cancelingTimers.insert(timer);
     }
@@ -112,8 +113,7 @@ void TimerQueue::handleRead() {
 
     m_callingExpiredTimers = true;
     m_cancelingTimers.clear();
-    for (const Entry& it : expired)
-    {
+    for (const Entry &it: expired) {
         it.second->run();
     }
     m_callingExpiredTimers = false;
@@ -122,10 +122,34 @@ void TimerQueue::handleRead() {
 }
 
 std::vector<TimerQueue::Entry> TimerQueue::getExpired(Timestamp now) {
-
+    std::vector<Entry> expired;
+    Entry sentry(now, nullptr);
+    auto end = m_timers.lower_bound(sentry);
+    std::copy(m_timers.begin(), end, back_inserter(expired));
+    m_timers.erase(m_timers.begin(), end);
+    for (const Entry &it: expired) {
+        ActiveTimer timer(it.second, it.second->sequence());
+        m_activeTimers.erase(timer);
+    }
+    return expired;
 }
 
 void TimerQueue::reset(const std::vector<Entry> &expired, Timestamp now) {
+    Timestamp nextExpire;
+    for (const Entry &it: expired) {
+        ActiveTimer timer(it.second, it.second->sequence());
+        if (it.second->repeat() && m_cancelingTimers.find(timer) == m_cancelingTimers.end()) {
+            it.second->restart(now);
+            insert(it.second);
+        }
+    }
 
+    if (!m_timers.empty()) {
+        nextExpire = m_timers.begin()->second->expiration();
+    }
+
+    if (nextExpire.valid()) {
+        resetTimerfd(m_timerfd, nextExpire);
+    }
 }
 } // Com

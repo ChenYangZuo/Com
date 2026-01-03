@@ -11,7 +11,6 @@
 #include "Channel.h"
 
 namespace Com {
-
 PollPoller::PollPoller(EventLoop *loop)
     : Poller(loop) {
 }

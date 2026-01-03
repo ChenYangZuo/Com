@@ -6,6 +6,7 @@
 #define COM_CHANNEL_H
 
 #include <functional>
+#include <memory>
 
 #include "base/Noncopyable.h"
 
@@ -15,7 +16,7 @@ using EventCallback = std::function<void()>;
 
 class EventLoop;
 
-class Channel : public Noncopyable{
+class Channel : public Noncopyable, public std::enable_shared_from_this<Channel> {
 public:
     Channel(EventLoop *loop, int id);
     ~Channel();
@@ -42,6 +43,7 @@ public:
     void setIndex(int index);
 
     EventLoop *ownerLoop() const;
+    void remove();
 
 private:
     void update();
@@ -51,6 +53,8 @@ private:
     int m_events{0};  // 关心的IO事件
     int m_revents{0};  // 目前活动的事件
     int m_index{-1};
+
+    bool m_addedToLoop{false};
 
     EventCallback m_readCallback;
     EventCallback m_writeCallback;

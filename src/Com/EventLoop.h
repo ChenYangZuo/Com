@@ -18,38 +18,50 @@
 #include "timer/Timer.h"
 
 namespace Com {
-
 class Channel;
 class Poller;
 class EventLoop;
 class TimerQueue;
 
 using EventLoopPtr = std::shared_ptr<EventLoop>;
-using ChannelList = std::vector<std::weak_ptr<Channel>>;
+using ChannelList = std::vector<std::weak_ptr<Channel> >;
 using Functor = std::function<void()>;
 
-class EventLoop : public Noncopyable{
+class EventLoop : public Noncopyable {
 public:
     static EventLoopPtr create();
+
     ~EventLoop();
 
     void loop();
+
     void quit();
-    void updateChannel(const std::shared_ptr<Channel>& channel) const;
+
+    void updateChannel(const std::shared_ptr<Channel> &channel) const;
+
+    void removeChannel(const std::shared_ptr<Channel> &channel);
 
     void assertInLoopThread() const;
+
     bool isInLoopThread() const;
+
     void runInLoop(Functor callback);
+
     void queueInLoop(Functor callback);
 
     TimerId runAt(Timestamp time, TimerCallback callback);
+
     TimerId runAfter(double delay, TimerCallback callback);
+
     TimerId runEvery(double interval, TimerCallback callback);
+
     void cancel(TimerId timerId);
+
     void wakeup() const;
 
 private:
     EventLoop();
+
     void execFunctors();
 
     std::atomic<bool> m_isRunning{false};
@@ -63,10 +75,9 @@ private:
     std::mutex m_mutex;
     std::vector<Functor> m_functors;
     std::atomic<bool> m_callingFunctor{false};
-    std::unique_ptr<Channel> m_wakeupChannel;
+    std::shared_ptr<Channel> m_wakeupChannel;
     int m_wakeupFd;
 };
-
 } // Com
 
 #endif //COM_EVENTLOOP_H

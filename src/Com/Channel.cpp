@@ -11,11 +11,10 @@
 #include "EventLoop.h"
 
 namespace Com {
-
 namespace {
-    constexpr int kNoneEvent = 0;
-    constexpr int kReadEvent = POLLIN | POLLPRI;
-    constexpr int kWriteEvent = POLLOUT;
+constexpr int kNoneEvent = 0;
+constexpr int kReadEvent = POLLIN | POLLPRI;
+constexpr int kWriteEvent = POLLOUT;
 }
 
 
@@ -83,7 +82,7 @@ int Channel::events() const {
 }
 
 void Channel::setRevents(int revents) {
-    m_events = revents;
+    m_revents = revents;
 }
 
 bool Channel::isNoneEvent() const {
@@ -122,8 +121,13 @@ EventLoop *Channel::ownerLoop() const {
     return m_loop;
 }
 
-void Channel::update() {
-    // m_loop->updateChannel(this);
+void Channel::remove() {
+    m_addedToLoop = false;
+    m_loop->removeChannel(shared_from_this());
 }
 
+void Channel::update() {
+    m_addedToLoop = true;
+    m_loop->updateChannel(shared_from_this());
+}
 } // Com
